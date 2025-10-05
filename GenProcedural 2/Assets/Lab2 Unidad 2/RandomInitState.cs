@@ -12,8 +12,25 @@ public class RandomInitState : MonoBehaviour
 
     private List<GameObject> cubosInstanciados = new List<GameObject>();
 
+
+    /// Mod Ignacio - Evaluador
+    /// 
+    /// Tengo la teoria de que crear algo que evalue la cantidad de bloques totales recorribles y la cantidad de bloques para la meta 
+    /// seria una buena función de evaluación. Por lo que aplicare ello:
+
+    private float bloquesParaLaMeta;
+    private float bloquesRecorriblesTotales;
+    private float bloquesTotales;
+    private float bloquesNoAccesibles;
+
+    private float cortafuego;
+    
+
+
+
     void Start()
     {
+        cortafuego = 0;
         StartCoroutine(RegenerarLaberintoCada3Segundos());
     }
 
@@ -42,9 +59,32 @@ public class RandomInitState : MonoBehaviour
         // Intenta hasta que haya un camino
         do
         {
+            bloquesParaLaMeta = 0;
+            bloquesRecorriblesTotales = 0;
+            bloquesTotales = 0;
+
             laberinto = GenerarLaberintoAleatorio();
             camino = EncontrarCamino(laberinto, 1, 1, width - 2, height - 2);
-        } while (camino == null);
+
+
+            bloquesNoAccesibles = bloquesTotales - bloquesRecorriblesTotales;
+
+
+            ///por como funciona el codigo esto tiene un error estimado de 2 XD
+            Debug.Log("Bloques para la meta: " + bloquesParaLaMeta);
+            Debug.Log("Bloques recorribles: " + bloquesRecorriblesTotales);
+            Debug.Log("Bloques totales: " + bloquesTotales);
+            Debug.Log("Bloques no accesibles: " + bloquesNoAccesibles);
+
+
+            //este cortafuego es muy barato pero al no se crachea unity XD
+            cortafuego++;
+            if(camino != null)
+            {
+                cortafuego = 0; 
+            }
+
+        } while (camino == null && cortafuego <= 20);
 
         // Marca el camino correcto con tierra (1)
         foreach (var pos in camino)
@@ -78,15 +118,29 @@ public class RandomInitState : MonoBehaviour
         // Rellena el interior aleatoriamente con muros y caminos
         for (int x = 1; x < width - 1; x++)
             for (int y = 1; y < height - 1; y++)
-                laberinto[x, y] = Random.value < probabilidadMuro ? 2 : 0;
+            {
+                laberinto[x, y] = Random.value < probabilidadMuro ? 2 : 0;  
+
+                //cuenta los bloques sin contar los muros
+                if(laberinto[x, y] == 0)
+                {
+                    bloquesTotales++;
+                }
+            }
 
         // Asegura inicio y fin libres
         laberinto[1, 1] = 0;
         laberinto[width - 2, height - 2] = 0;
+        //bloque inicio y final
+        bloquesTotales+= 2;
+
+
+
         return laberinto;
     }
 
     // BFS para encontrar el camino más corto
+    //Ignacio: lo modifique para que recorriera todo
     List<Vector2Int> EncontrarCamino(int[,] laberinto, int startX, int startY, int endX, int endY)
     {
         int w = laberinto.GetLength(0);
@@ -100,9 +154,16 @@ public class RandomInitState : MonoBehaviour
         int[] dx = { 1, -1, 0, 0 };
         int[] dy = { 0, 0, 1, -1 };
 
+        List<Vector2Int> caminoEncontrado = new List<Vector2Int>();
+        caminoEncontrado = null; //lo limpio del anterior
+
+
         while (cola.Count > 0)
         {
             var actual = cola.Dequeue();
+
+            bloquesRecorriblesTotales++;
+
             if (actual.x == endX && actual.y == endY)
             {
                 // Reconstruye el camino
@@ -112,9 +173,11 @@ public class RandomInitState : MonoBehaviour
                 {
                     camino.Add(paso);
                     paso = previo[paso.x, paso.y];
+
+                    bloquesParaLaMeta++;
                 }
                 camino.Reverse();
-                return camino;
+                caminoEncontrado = camino;
             }
             for (int dir = 0; dir < 4; dir++)
             {
@@ -130,6 +193,11 @@ public class RandomInitState : MonoBehaviour
                     }
                 }
             }
+        }
+
+        if(caminoEncontrado != null)
+        {
+            return caminoEncontrado;
         }
         return null; // No hay camino
     }
