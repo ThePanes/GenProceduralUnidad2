@@ -1,11 +1,20 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
+using Random = UnityEngine.Random;
 
 public class RandomInitState : MonoBehaviour
 {
     public int width = 10;
     public int height = 10;
+
+    [Tooltip("Posición de inicio (x, y) dentro del laberinto")]
+    public Vector2Int start = new Vector2Int(1, 1);
+
+    [Tooltip("Posición de meta (x, y) dentro del laberinto")]
+    public Vector2Int goal = new Vector2Int(8, 8);
+
     public GameObject[] terrainPrefabs;
     public Vector3 offset = new Vector3(15, 0, 0); // Desplazamiento para no encimar el otro laberinto
     [Range(0, 1)] public float probabilidadMuro = 0.4f; // Menos muros = laberinto más abierto
@@ -24,9 +33,17 @@ public class RandomInitState : MonoBehaviour
     private float bloquesNoAccesibles;
 
     private float cortafuego;
-    
 
 
+
+    void OnValidate()
+    {
+        // Limita start y goal a estar dentro del rango permitido
+        start.x = Mathf.Clamp(start.x, 1, width - 2);
+        start.y = Mathf.Clamp(start.y, 1, height - 2);
+        goal.x = Mathf.Clamp(goal.x, 1, width - 2);
+        goal.y = Mathf.Clamp(goal.y, 1, height - 2);
+    }
 
     void Start()
     {
@@ -64,24 +81,22 @@ public class RandomInitState : MonoBehaviour
             bloquesTotales = 0;
 
             laberinto = GenerarLaberintoAleatorio();
-            camino = EncontrarCamino(laberinto, 1, 1, width - 2, height - 2);
+            camino = EncontrarCamino(laberinto, start.x, start.y, goal.x, goal.y);
 
 
             bloquesNoAccesibles = bloquesTotales - bloquesRecorriblesTotales;
 
 
-            ///por como funciona el codigo esto tiene un error estimado de 2 XD
             Debug.Log("Bloques para la meta: " + bloquesParaLaMeta);
             Debug.Log("Bloques recorribles: " + bloquesRecorriblesTotales);
             Debug.Log("Bloques totales: " + bloquesTotales);
             Debug.Log("Bloques no accesibles: " + bloquesNoAccesibles);
 
 
-            //este cortafuego es muy barato pero al no se crachea unity XD
             cortafuego++;
-            if(camino != null)
+            if (camino != null)
             {
-                cortafuego = 0; 
+                cortafuego = 0;
             }
 
         } while (camino == null && cortafuego <= 20);
@@ -93,8 +108,8 @@ public class RandomInitState : MonoBehaviour
                 laberinto[pos.x, pos.y] = 1;
         }
         // Asegura inicio y fin como pasto
-        laberinto[1, 1] = 0;
-        laberinto[width - 2, height - 2] = 0;
+        laberinto[start.x, start.y] = 0;
+        laberinto[goal.x, goal.y] = 0;
 
         // Dibuja el laberinto
         for (int x = 0; x < width; x++)
@@ -119,20 +134,20 @@ public class RandomInitState : MonoBehaviour
         for (int x = 1; x < width - 1; x++)
             for (int y = 1; y < height - 1; y++)
             {
-                laberinto[x, y] = Random.value < probabilidadMuro ? 2 : 0;  
+                laberinto[x, y] = Random.value < probabilidadMuro ? 2 : 0;
 
                 //cuenta los bloques sin contar los muros
-                if(laberinto[x, y] == 0)
+                if (laberinto[x, y] == 0)
                 {
                     bloquesTotales++;
                 }
             }
 
         // Asegura inicio y fin libres
-        laberinto[1, 1] = 0;
-        laberinto[width - 2, height - 2] = 0;
+        laberinto[start.x, start.y] = 0;
+        laberinto[goal.x, goal.y] = 0;
         //bloque inicio y final
-        bloquesTotales+= 2;
+        bloquesTotales += 2;
 
 
 
@@ -195,7 +210,7 @@ public class RandomInitState : MonoBehaviour
             }
         }
 
-        if(caminoEncontrado != null)
+        if (caminoEncontrado != null)
         {
             return caminoEncontrado;
         }
