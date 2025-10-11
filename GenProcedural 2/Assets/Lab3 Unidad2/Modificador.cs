@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System;
 using Random = UnityEngine.Random;
 
-public class RandomInitState : MonoBehaviour
+public class Modificador : MonoBehaviour
 {
     public int width = 10;
     public int height = 10;
@@ -21,6 +21,8 @@ public class RandomInitState : MonoBehaviour
 
     private List<GameObject> cubosInstanciados = new List<GameObject>();
 
+    public int[,] laberintoGeneral;
+
 
     /// Mod Ignacio - Evaluador
     /// 
@@ -31,9 +33,11 @@ public class RandomInitState : MonoBehaviour
     private float bloquesRecorriblesTotales;
     private float bloquesTotales;
     private float bloquesNoAccesibles;
+    public float puntuacionDeEvaluacion;
 
     private float cortafuego;
 
+    public bool laberintoAnalizado;
 
 
     void OnValidate()
@@ -45,19 +49,25 @@ public class RandomInitState : MonoBehaviour
         goal.y = Mathf.Clamp(goal.y, 1, height - 2);
     }
 
-    void Start()
+    IEnumerator Start()
     {
+
+        yield return new WaitForSeconds(2f);///retrazo de 2 seg
+
+
+
+        yield return null; 
         cortafuego = 0;
         StartCoroutine(RegenerarLaberintoCada3Segundos());
     }
 
     IEnumerator RegenerarLaberintoCada3Segundos()
     {
-        while (true)
+        do
         {
             GenerarYLlenarLaberinto();
             yield return new WaitForSeconds(3f);
-        }
+        } while (true);
     }
 
     void GenerarYLlenarLaberinto()
@@ -66,32 +76,69 @@ public class RandomInitState : MonoBehaviour
         foreach (var cubo in cubosInstanciados)
         {
             if (cubo != null)
-                Destroy(cubo);
+                DestroyImmediate(cubo);
         }
         cubosInstanciados.Clear();
 
         int[,] laberinto;
         List<Vector2Int> camino;
 
+        if(laberintoGeneral == null)
+        {
+            do
+            {
+
+                bloquesParaLaMeta = 0;
+                bloquesRecorriblesTotales = 0;
+                bloquesTotales = 0;
+
+                laberinto = AnalisarYEvaluar(laberintoGeneral);
+                camino = EncontrarCamino(laberinto, start.x, start.y, goal.x, goal.y);
+
+
+                bloquesNoAccesibles = bloquesTotales - bloquesRecorriblesTotales;
+
+                cortafuego++;
+                if (camino != null)
+                {
+                    cortafuego = 0;
+                }
+
+
+            } while (camino == null && cortafuego <= 50);
+        }
+
+
+
         // Intenta hasta que haya un camino
         do
         {
+
             bloquesParaLaMeta = 0;
             bloquesRecorriblesTotales = 0;
             bloquesTotales = 0;
 
-            laberinto = GenerarLaberintoAleatorio();
+            laberinto = AnalisarYEvaluar(laberintoGeneral);
             camino = EncontrarCamino(laberinto, start.x, start.y, goal.x, goal.y);
 
 
             bloquesNoAccesibles = bloquesTotales - bloquesRecorriblesTotales;
 
-            /*
-            Debug.Log("Bloques para la meta: " + bloquesParaLaMeta);
+
+            /// Ya para explicarlo de manera simple dejare un escrito innecesario en el codigo por que se me da la gana (Ignacio)
+            /// La evaluación del lab funcionara de la siguiente manera:
+            /// Puntuare cada laberinto en base a una función de puntuación, y la que tenga mejor puntuación de los laberintos sera quien me lo quedare
+            /// - Cada cubo de camino +2 puntos
+            /// - Cada cubo no accesible = -3 puntos
+            /// Nota: pensaria en hacer algo con el width y height pero estoy cansado en este instante XD
+
+            
+
+            /*Debug.Log("Bloques para la meta: " + bloquesParaLaMeta);
             Debug.Log("Bloques recorribles: " + bloquesRecorriblesTotales);
             Debug.Log("Bloques totales: " + bloquesTotales);
-            Debug.Log("Bloques no accesibles: " + bloquesNoAccesibles);
-            */
+            Debug.Log("Bloques no accesibles: " + bloquesNoAccesibles);*/
+            
 
             cortafuego++;
             if (camino != null)
@@ -101,40 +148,68 @@ public class RandomInitState : MonoBehaviour
 
         } while (camino == null && cortafuego <= 20);
 
-        // Marca el camino correcto con tierra (1)
-        foreach (var pos in camino)
-        {
-            if (laberinto[pos.x, pos.y] == 0)
-                laberinto[pos.x, pos.y] = 1;
-        }
-        // Asegura inicio y fin como pasto
-        laberinto[start.x, start.y] = 0;
-        laberinto[goal.x, goal.y] = 0;
 
-        // Dibuja el laberinto
-        for (int x = 0; x < width; x++)
-            for (int y = 0; y < height; y++)
+
+        // Marca el camino correcto con tierra (1)
+        if (camino != null)
+        {
+            foreach (var pos in camino)
             {
-                int tipo = laberinto[x, y];
-                Vector3 pos = new Vector3(x, 0, y) + offset;
-                GameObject cubo = Instantiate(terrainPrefabs[tipo], pos, Quaternion.identity);
-                cubosInstanciados.Add(cubo);
+                if (laberinto[pos.x, pos.y] == 0)
+                    laberinto[pos.x, pos.y] = 1;
             }
+            // Asegura inicio y fin como pasto
+            laberinto[start.x, start.y] = 0;
+            laberinto[goal.x, goal.y] = 0;
+
+            // Dibuja el laberinto
+            for (int x = 0; x < width; x++)
+                for (int y = 0; y < height; y++)
+                {
+                    int tipo = laberinto[x, y];
+                    Vector3 pos = new Vector3(x, 0, y) + offset;
+                    GameObject cubo = Instantiate(terrainPrefabs[tipo], pos, Quaternion.identity);
+                    cubosInstanciados.Add(cubo);
+                }
+        }
+        else
+        {
+            Debug.Log("camino nulo");
+        }
+
+
+
+
+        puntuacionDeEvaluacion = (bloquesParaLaMeta * 2) - (bloquesNoAccesibles * 3);
+        Debug.Log("Puntuación total: " + puntuacionDeEvaluacion);
+        laberintoAnalizado = true;
     }
 
-    int[,] GenerarLaberintoAleatorio()
-    {
-        int[,] laberinto = new int[width, height];
-        // Bordes como muros
-        for (int x = 0; x < width; x++)
-            for (int y = 0; y < height; y++)
-                laberinto[x, y] = (x == 0 || y == 0 || x == width - 1 || y == height - 1) ? 2 : 0;
 
-        // Rellena el interior aleatoriamente con muros y caminos
+    int[,] AnalisarYEvaluar(int[,] laberinto)
+    {
+      
         for (int x = 1; x < width - 1; x++)
             for (int y = 1; y < height - 1; y++)
             {
-                laberinto[x, y] = Random.value < probabilidadMuro ? 2 : 0;
+
+                if (laberinto[x, y] == 1)
+                {
+                    laberinto[x, y] = 0;
+                }
+
+
+                if (laberinto[x, y] == 0)
+                {
+                    laberinto[x, y] = 0;
+                    laberinto[x, y] = Random.value < probabilidadMuro/4 ? 2 : 0;
+                }
+                else if(laberinto[x, y] == 2)
+                {
+                    laberinto[x, y] = 0;
+                    laberinto[x, y] = Random.value < probabilidadMuro*2 ? 2 : 0;
+                }
+                    
 
                 //cuenta los bloques sin contar los muros
                 if (laberinto[x, y] == 0)
@@ -143,13 +218,18 @@ public class RandomInitState : MonoBehaviour
                 }
             }
 
-        // Asegura inicio y fin libres
-        laberinto[start.x, start.y] = 0;
-        laberinto[goal.x, goal.y] = 0;
-        //bloque inicio y final
-        bloquesTotales += 2;
 
+        if(laberinto[start.x, start.y] != 0)
+        {
+            laberinto[start.x, start.y] = 0;
+            bloquesTotales += 1;
+        }
 
+        if(laberinto[goal.x, goal.y] != 0)
+        {
+            laberinto[goal.x, goal.y] = 0;
+            bloquesTotales += 1;
+        }
 
         return laberinto;
     }
@@ -216,4 +296,6 @@ public class RandomInitState : MonoBehaviour
         }
         return null; // No hay camino
     }
+
+
 }
