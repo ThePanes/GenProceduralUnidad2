@@ -399,6 +399,68 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &424670331
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 424670333}
+  - component: {fileID: 424670332}
+  m_Layer: 0
+  m_Name: Gestionador
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &424670332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 424670331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0afee70e3501d9a4cac82d8cf353f521, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gestionador
+  mod1: {fileID: 2111519775}
+  mod2: {fileID: 1187824041}
+  mod3: {fileID: 1094548969}
+  mod4: {fileID: 1216632126}
+  width: 10
+  height: 10
+  start: {x: 1, y: 1}
+  goal: {x: 8, y: 8}
+  terrainPrefabs:
+  - {fileID: 6600729468802455904, guid: 7127d472f61169242866e1ac60f13b1d, type: 3}
+  - {fileID: 5580230598994506885, guid: d9ca66760efec624fabb37b682362637, type: 3}
+  - {fileID: 5644096139231708439, guid: 170aed3317b3f8846bd3534a5383051a, type: 3}
+  offset: {x: 30, y: 0, z: 15}
+  probabilidadMuro: 0.4
+--- !u!4 &424670333
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 424670331}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 42.99334, y: 0, z: 17.45629}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2111519776}
+  - {fileID: 1187824042}
+  - {fileID: 1094548970}
+  - {fileID: 1216632127}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &707017229
 GameObject:
   m_ObjectHideFlags: 0
@@ -423,7 +485,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 707017229}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d2d968776805aa64bb84e0369fc0665d, type: 3}
   m_Name: 
@@ -502,6 +564,174 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1094548968
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1094548970}
+  - component: {fileID: 1094548969}
+  m_Layer: 0
+  m_Name: Modificador (2)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1094548969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1094548968}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1e7607e0e683954da9092d7f3d1162d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Modificador
+  width: 10
+  height: 10
+  start: {x: 1, y: 1}
+  goal: {x: 8, y: 8}
+  terrainPrefabs:
+  - {fileID: 6600729468802455904, guid: 7127d472f61169242866e1ac60f13b1d, type: 3}
+  - {fileID: 5580230598994506885, guid: d9ca66760efec624fabb37b682362637, type: 3}
+  - {fileID: 5644096139231708439, guid: 170aed3317b3f8846bd3534a5383051a, type: 3}
+  offset: {x: 60, y: 0, z: 0}
+  probabilidadMuro: 0.4
+  puntuacionDeEvaluacion: 0
+  laberintoAnalizado: 0
+--- !u!4 &1094548970
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1094548968}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 4.406662, y: 0, z: -3.7917795}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 424670333}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1187824040
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1187824042}
+  - component: {fileID: 1187824041}
+  m_Layer: 0
+  m_Name: Modificador (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1187824041
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1187824040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1e7607e0e683954da9092d7f3d1162d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Modificador
+  width: 10
+  height: 10
+  start: {x: 1, y: 1}
+  goal: {x: 8, y: 8}
+  terrainPrefabs:
+  - {fileID: 6600729468802455904, guid: 7127d472f61169242866e1ac60f13b1d, type: 3}
+  - {fileID: 5580230598994506885, guid: d9ca66760efec624fabb37b682362637, type: 3}
+  - {fileID: 5644096139231708439, guid: 170aed3317b3f8846bd3534a5383051a, type: 3}
+  offset: {x: 45, y: 0, z: 0}
+  probabilidadMuro: 0.4
+  puntuacionDeEvaluacion: 0
+  laberintoAnalizado: 0
+--- !u!4 &1187824042
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1187824040}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 4.406662, y: 0, z: -3.7917795}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 424670333}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1216632125
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1216632127}
+  - component: {fileID: 1216632126}
+  m_Layer: 0
+  m_Name: Modificador (3)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1216632126
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1216632125}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1e7607e0e683954da9092d7f3d1162d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Modificador
+  width: 10
+  height: 10
+  start: {x: 1, y: 1}
+  goal: {x: 8, y: 8}
+  terrainPrefabs:
+  - {fileID: 6600729468802455904, guid: 7127d472f61169242866e1ac60f13b1d, type: 3}
+  - {fileID: 5580230598994506885, guid: d9ca66760efec624fabb37b682362637, type: 3}
+  - {fileID: 5644096139231708439, guid: 170aed3317b3f8846bd3534a5383051a, type: 3}
+  offset: {x: 75, y: 0, z: 0}
+  probabilidadMuro: 0.4
+  puntuacionDeEvaluacion: 0
+  laberintoAnalizado: 0
+--- !u!4 &1216632127
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1216632125}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 4.406662, y: 0, z: -3.7917795}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 424670333}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1392890315
 GameObject:
   m_ObjectHideFlags: 0
@@ -526,7 +756,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1392890315}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5f3196682c8c87142bcdf3e4ed16bf99, type: 3}
   m_Name: 
@@ -558,6 +788,62 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2111519774
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2111519776}
+  - component: {fileID: 2111519775}
+  m_Layer: 0
+  m_Name: Modificador
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2111519775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2111519774}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1e7607e0e683954da9092d7f3d1162d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Modificador
+  width: 10
+  height: 10
+  start: {x: 1, y: 1}
+  goal: {x: 8, y: 8}
+  terrainPrefabs:
+  - {fileID: 6600729468802455904, guid: 7127d472f61169242866e1ac60f13b1d, type: 3}
+  - {fileID: 5580230598994506885, guid: d9ca66760efec624fabb37b682362637, type: 3}
+  - {fileID: 5644096139231708439, guid: 170aed3317b3f8846bd3534a5383051a, type: 3}
+  offset: {x: 30, y: 0, z: 0}
+  probabilidadMuro: 0.4
+  puntuacionDeEvaluacion: 0
+  laberintoAnalizado: 0
+--- !u!4 &2111519776
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2111519774}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 4.406662, y: 0, z: -3.7917795}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 424670333}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -567,3 +853,4 @@ SceneRoots:
   - {fileID: 832575519}
   - {fileID: 1392890317}
   - {fileID: 707017231}
+  - {fileID: 424670333}
