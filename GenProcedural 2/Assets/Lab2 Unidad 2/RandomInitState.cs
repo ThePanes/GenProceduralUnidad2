@@ -6,8 +6,8 @@ using Random = UnityEngine.Random;
 
 public class RandomInitState : MonoBehaviour
 {
-    [Range(10, 30)] public int width = 10;
-    [Range(10, 30)] public int height = 10;
+    [Range(10, 25)] public int width = 10;
+    [Range(10, 25)] public int height = 10;
 
     [Tooltip("Posición de inicio (x, y) dentro del laberinto")]
     public Vector2Int start = new Vector2Int(1, 1);

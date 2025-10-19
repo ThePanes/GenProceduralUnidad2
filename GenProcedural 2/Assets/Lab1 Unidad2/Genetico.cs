@@ -4,20 +4,33 @@ using System.Collections.Generic;
 
 public class Genetico : MonoBehaviour
 {
-    public int width = 10;
-    public int height = 10;
+    [Range(10, 25)] public int width = 10;
+    [Range(10, 25)] public int height = 10;
+
+    [Tooltip("Posición de inicio (x, y) dentro del laberinto")]
+    public Vector2Int start = new Vector2Int(1, 1);
+
+    [Tooltip("Posición de meta (x, y) dentro del laberinto")]
+    public Vector2Int goal = new Vector2Int(8, 8);
+
+    public Vector3 offset = new Vector3(15, 0, 0); // Desplazamiento del Laberinto
+
+    // 0: pasto (camino principal), 1: tierra (camino difícil), 2: cerro (muro)
+    public GameObject[] terrainPrefabs;
+
+
     public int padres = 10;
     public int hijos = 20;
     public int generations = 50;
+
+
 
     // Parámetros para controlar la proporción de cada tipo de celda
     [Range(0, 1)] public float porcentajeCaminos = 0.15f; // pasto (camino principal)
     [Range(0, 1)] public float porcentajeTierra = 0.15f;  // tierra (camino secundario)
     [Range(0, 1)] public float porcentajeMuros = 0.7f;    // cerro (muro)
 
-    // 0: pasto (camino principal), 1: tierra (camino difícil), 2: cerro (muro)
-    public GameObject[] terrainPrefabs;
-
+ 
     List<int[,]> population = new List<int[,]>();
     List<GameObject> cubosInstanciados = new List<GameObject>();
 
@@ -209,7 +222,7 @@ public class Genetico : MonoBehaviour
             for (int y = 0; y < height; y++)
             {
                 int tipo = terreno[x, y];
-                Vector3 pos = new Vector3(x, 0, y);
+                Vector3 pos = new Vector3(x, 0, y) + offset;
                 GameObject cubo = Instantiate(terrainPrefabs[tipo], pos, Quaternion.identity);
                 cubosInstanciados.Add(cubo);
             }
