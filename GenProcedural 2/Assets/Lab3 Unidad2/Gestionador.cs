@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 using Random = UnityEngine.Random;
+using static UnityEngine.UI.Image;
+using System.Reflection;
 
 public class Gestionador : MonoBehaviour
 {
@@ -16,10 +18,10 @@ public class Gestionador : MonoBehaviour
     public int height = 10;
 
     [Tooltip("Posición de inicio (x, y) dentro del laberinto")]
-    public Vector2Int start = new Vector2Int(1, 1);
+    public Vector2Int start /*= new Vector2Int(1, 1)*/;
 
     [Tooltip("Posición de meta (x, y) dentro del laberinto")]
-    public Vector2Int goal = new Vector2Int(8, 8);
+    public Vector2Int goal  /*= new Vector2Int(8, 8)*/;
 
     public GameObject[] terrainPrefabs;
     public Vector3 offset = new Vector3(15, 0, 0); // Desplazamiento para no encimar el otro laberinto
@@ -29,13 +31,6 @@ public class Gestionador : MonoBehaviour
 
     public int[,] laberintoGeneral;
     public int[,] laberintoReserva; //para que no genere un lab con peor puntuación
-
-
-    /// Mod Ignacio - Evaluador
-    /// 
-    /// Tengo la teoria de que crear algo que evalue la cantidad de bloques totales recorribles y la cantidad de bloques para la meta 
-    /// seria una buena función de evaluación. Por lo que aplicare ello:
-
 
     private float cortafuego;
     private float puntajeMaximo;
@@ -56,14 +51,15 @@ public class Gestionador : MonoBehaviour
     {
         puntajeMinimo = 0;
         cortafuego = 0;
-        GenerarYLlenarLaberinto();
+        GenerarGrillaYCrearLaberinto();
 
-        if(laberintoGeneral != null)
+        EstablecerAlturas();
+        EstablecerStartGoal();
+        EstablecerOffset();
+
+        if (laberintoGeneral != null)
         {
-            mod1.laberintoGeneral = ClonLaberinto(laberintoGeneral);
-            mod2.laberintoGeneral = ClonLaberinto(laberintoGeneral);
-            mod3.laberintoGeneral = ClonLaberinto(laberintoGeneral);
-            mod4.laberintoGeneral = ClonLaberinto(laberintoGeneral);
+            ClonarTodoAlLaberintoGeneral();
         }
         
     }
@@ -71,90 +67,95 @@ public class Gestionador : MonoBehaviour
 
     private void Update()
     {
-        ///Remplazo completo de los laberintos
-        if (mod1.laberintoAnalizado && mod2.laberintoAnalizado && mod3.laberintoAnalizado && mod4.laberintoAnalizado)
+        if(height != mod1.height || width  != mod1.width || start != mod1.start || goal != mod1.goal)
+        {
+            Debug.Log("antes del desastre");
+            StartCoroutine(PausaDeEdicion());
+
+            ResetManual();
+          
+
+        }
+        else if(mod1.laberintoAnalizado && mod2.laberintoAnalizado && mod3.laberintoAnalizado && mod4.laberintoAnalizado)  ///Remplazo completo de los laberintos
         {
 
             //sacamos puntaje maximo
             puntajeMaximo = Mathf.Max(mod1.puntuacionDeEvaluacion, mod2.puntuacionDeEvaluacion, mod3.puntuacionDeEvaluacion, mod4.puntuacionDeEvaluacion, puntajeMinimo);
 
-
-
-
-
-
             //vemos cual es y remplazamos los laberintos segun cual sea mayor
-
-            if (puntajeMinimo == puntajeMaximo)
+            if (mod1.puntuacionDeEvaluacion == puntajeMaximo)
             {
-                laberintoGeneral = ClonLaberinto(laberintoReserva);
-
-                ///Si no generaron nada mejor vuelvan a la base
-                mod1.laberintoGeneral = laberintoReserva;
-                mod2.laberintoGeneral = laberintoReserva;
-                mod3.laberintoGeneral = laberintoReserva;
-                mod4.laberintoGeneral = laberintoReserva;
-
-                Debug.Log("0");
-            }
-            else if(mod1.puntuacionDeEvaluacion == puntajeMaximo)
-            {
-                laberintoGeneral = ClonLaberinto(mod1.laberintoGeneral);
-                laberintoReserva = ClonLaberinto(mod1.laberintoGeneral);
+                RemplazoManualLaberinto(laberintoGeneral, mod1.laberintoGeneral);
+                RemplazoManualLaberinto(laberintoReserva, mod1.laberintoGeneral);
 
                 //
-                mod2.laberintoGeneral = laberintoGeneral;
-                mod3.laberintoGeneral = laberintoGeneral;
-                mod4.laberintoGeneral = laberintoGeneral;
+                RemplazoManualLaberinto(mod2.laberintoDeReservaModificador, laberintoReserva);
+                RemplazoManualLaberinto(mod3.laberintoDeReservaModificador, laberintoReserva);
+                RemplazoManualLaberinto(mod4.laberintoDeReservaModificador, laberintoReserva);
 
                 puntajeMinimo = puntajeMaximo;
                 GenerarLaberintoReserva(laberintoReserva);
                 Debug.Log("1");
             }
-            else if(mod2.puntuacionDeEvaluacion == puntajeMaximo)
+            else if (mod2.puntuacionDeEvaluacion == puntajeMaximo)
             {
-                laberintoGeneral = ClonLaberinto(mod2.laberintoGeneral);
-                laberintoReserva = ClonLaberinto(mod2.laberintoGeneral);
+                RemplazoManualLaberinto(laberintoGeneral, mod2.laberintoGeneral);
+                RemplazoManualLaberinto(laberintoReserva, mod2.laberintoGeneral);
 
-                mod1.laberintoGeneral = laberintoGeneral;
+                RemplazoManualLaberinto(mod1.laberintoDeReservaModificador, laberintoReserva);
                 //
-                mod3.laberintoGeneral = laberintoGeneral;
-                mod4.laberintoGeneral = laberintoGeneral;
+                RemplazoManualLaberinto(mod3.laberintoDeReservaModificador, laberintoReserva);
+                RemplazoManualLaberinto(mod4.laberintoDeReservaModificador, laberintoReserva);
 
                 puntajeMinimo = puntajeMaximo;
                 GenerarLaberintoReserva(laberintoReserva);
                 Debug.Log("2");
             }
-            else if(mod3.puntuacionDeEvaluacion == puntajeMaximo)
+            else if (mod3.puntuacionDeEvaluacion == puntajeMaximo)
             {
-                laberintoGeneral = ClonLaberinto(mod3.laberintoGeneral);
-                laberintoReserva = ClonLaberinto(mod3.laberintoGeneral);
+                RemplazoManualLaberinto(laberintoGeneral, mod3.laberintoGeneral);
+                RemplazoManualLaberinto(laberintoReserva, mod3.laberintoGeneral);
 
-                mod1.laberintoGeneral = laberintoGeneral;
-                mod2.laberintoGeneral = laberintoGeneral;
+                RemplazoManualLaberinto(mod1.laberintoDeReservaModificador, laberintoReserva);
+                RemplazoManualLaberinto(mod2.laberintoDeReservaModificador, laberintoReserva);
                 //
-                mod4.laberintoGeneral = laberintoGeneral;
+                RemplazoManualLaberinto(mod4.laberintoDeReservaModificador, laberintoReserva);
 
                 GenerarLaberintoReserva(laberintoReserva);
                 puntajeMinimo = puntajeMaximo;
                 Debug.Log("3");
             }
-            else if(mod4.puntuacionDeEvaluacion == puntajeMaximo)
+            else if (mod4.puntuacionDeEvaluacion == puntajeMaximo)
             {
-                laberintoGeneral = ClonLaberinto(mod4.laberintoGeneral);
-                laberintoReserva = ClonLaberinto(mod4.laberintoGeneral);
+                RemplazoManualLaberinto(laberintoGeneral, mod4.laberintoGeneral);
+                RemplazoManualLaberinto(laberintoReserva, mod4.laberintoGeneral);
 
-                mod1.laberintoGeneral = laberintoGeneral;
-                mod2.laberintoGeneral = laberintoGeneral;
-                mod3.laberintoGeneral = laberintoGeneral;
+                RemplazoManualLaberinto(mod1.laberintoDeReservaModificador, laberintoReserva);
+                RemplazoManualLaberinto(mod2.laberintoDeReservaModificador, laberintoReserva);
+                RemplazoManualLaberinto(mod3.laberintoDeReservaModificador, laberintoReserva);
                 //
+
 
                 puntajeMinimo = puntajeMaximo;
                 GenerarLaberintoReserva(laberintoReserva);
                 Debug.Log("4");
             }
+            else if (puntajeMinimo == puntajeMaximo)
+            {
+                //laberintoGeneral = ClonLaberinto(laberintoReserva);
 
-            
+                RemplazoManualLaberinto(laberintoGeneral, laberintoReserva);
+
+                RemplazoManualLaberinto(mod1.laberintoDeReservaModificador, laberintoReserva);
+                RemplazoManualLaberinto(mod2.laberintoDeReservaModificador, laberintoReserva);
+                RemplazoManualLaberinto(mod3.laberintoDeReservaModificador, laberintoReserva);
+                RemplazoManualLaberinto(mod4.laberintoDeReservaModificador, laberintoReserva);
+
+                GenerarLaberintoReserva(laberintoReserva);
+                Debug.Log("0");
+            }
+
+
 
             //vuelvo a false el check para saber que no esta listo todaavia la info del siguiente lab
             mod1.laberintoAnalizado = false;
@@ -163,23 +164,39 @@ public class Gestionador : MonoBehaviour
             mod4.laberintoAnalizado = false;
 
 
-            Debug.Log("puntaje maximo:" + puntajeMaximo);
-            Debug.Log("puntaje minimo:" + puntajeMinimo);
+            Debug.Log("puntaje maximo:" + puntajeMaximo.ToString("F10"));
+            Debug.Log("puntaje minimo:" + puntajeMinimo.ToString("F10"));
         }
     }
 
 
     //--------------------------------------------------------------------------------------------------------------------------------
 
-    void GenerarYLlenarLaberinto()
+    void RemplazoManualLaberinto(int[,] laberintoARemplazar, int[,] laberintoBase)
     {
-        // Elimina los cubos anteriores
-        foreach (var cubo in cubosInstanciados)
+
+        if(laberintoARemplazar == null)
         {
-            if (cubo != null)
-                DestroyImmediate(cubo);
+            Debug.Log("fallo laberintoRemplazar");
         }
-        cubosInstanciados.Clear();
+        else if(laberintoBase == null)
+        {
+            Debug.Log("fallo laberintoBase");
+        }
+        else
+        {
+            for (int x = 0; x < width; x++)
+                for (int y = 0; y < height; y++)
+                {
+                    laberintoARemplazar[x, y] = laberintoBase[x, y];
+                }
+        }
+    }
+
+
+    void GenerarGrillaYCrearLaberinto()
+    {
+        BorrarCubos();
 
         int[,] laberinto;
         List<Vector2Int> camino;
@@ -191,7 +208,8 @@ public class Gestionador : MonoBehaviour
 
                 laberintoGeneral = GenerarLaberintoAleatorio();
 
-                laberinto = AnalisarYEvaluar(laberintoGeneral);
+                laberinto = ClonLaberinto(laberintoGeneral);
+                //laberinto = AnalisarYEvaluar(laberintoGeneral);
                 camino = EncontrarCamino(laberinto, start.x, start.y, goal.x, goal.y);
 
                 cortafuego++;
@@ -202,52 +220,6 @@ public class Gestionador : MonoBehaviour
 
             } while (camino == null && cortafuego <= 50);
         }
-
-
-
-        // Intenta hasta que haya un camino
-        do
-        {
-            laberinto = AnalisarYEvaluar(laberintoGeneral);
-            camino = EncontrarCamino(laberinto, start.x, start.y, goal.x, goal.y);
-
-
-            cortafuego++;
-            if (camino != null)
-            {
-                cortafuego = 0;
-            }
-
-        } while (camino == null && cortafuego <= 20);
-
-        /*
-        // Marca el camino correcto con tierra (1)
-        if (camino != null)
-        {
-            foreach (var pos in camino)
-            {
-                if (laberinto[pos.x, pos.y] == 0)
-                    laberinto[pos.x, pos.y] = 1;
-            }
-            // Asegura inicio y fin como pasto
-            laberinto[start.x, start.y] = 0;
-            laberinto[goal.x, goal.y] = 0;
-
-            // Dibuja el laberinto
-            for (int x = 0; x < width; x++)
-                for (int y = 0; y < height; y++)
-                {
-                    int tipo = laberinto[x, y];
-                    Vector3 pos = new Vector3(x, 0, y) + offset;
-                    GameObject cubo = Instantiate(terrainPrefabs[tipo], pos, Quaternion.identity);
-                    cubosInstanciados.Add(cubo);
-                }
-        }
-        else
-        {
-            Debug.Log("camino nulo");
-        }*/
-
 
     }
 
@@ -277,46 +249,7 @@ public class Gestionador : MonoBehaviour
 
         return laberinto;
     }
-
-    int[,] AnalisarYEvaluar(int[,] laberinto)
-    {
-
-        for (int x = 1; x < width - 1; x++)
-            for (int y = 1; y < height - 1; y++)
-            {
-
-                if (laberinto[x, y] == 1)
-                {
-                    laberinto[x, y] = 0;
-                }
-
-
-                if (laberinto[x, y] == 0)
-                {
-                    laberinto[x, y] = 0;
-                    laberinto[x, y] = Random.value < probabilidadMuro / 4 ? 2 : 0;
-                }
-                else if (laberinto[x, y] == 2)
-                {
-                    laberinto[x, y] = 0;
-                    laberinto[x, y] = Random.value < probabilidadMuro * 2 ? 2 : 0;
-                }
-
-            }
-
-
-        if (laberinto[start.x, start.y] != 0)
-        {
-            laberinto[start.x, start.y] = 0;
-        }
-
-        if (laberinto[goal.x, goal.y] != 0)
-        {
-            laberinto[goal.x, goal.y] = 0;
-        }
-
-        return laberinto;
-    }
+    
 
     // BFS para encontrar el camino más corto
     //Ignacio: lo modifique para que recorriera todo
@@ -379,13 +312,7 @@ public class Gestionador : MonoBehaviour
 
     void GenerarLaberintoReserva(int[,] laberinto)
     {
-        // Elimina los cubos anteriores
-        foreach (var cubo in cubosInstanciados)
-        {
-            if (cubo != null)
-                DestroyImmediate(cubo);
-        }
-        cubosInstanciados.Clear();
+        BorrarCubos();
 
             // Dibuja el laberinto
             for (int x = 0; x < width; x++)
@@ -412,6 +339,126 @@ public class Gestionador : MonoBehaviour
                 copia[x, y] = original[x, y];
 
         return copia;
+    }
+
+    void ClonarTodoAlLaberintoGeneral()
+    {
+        mod1.laberintoGeneral = ClonLaberinto(laberintoGeneral);
+        mod2.laberintoGeneral = ClonLaberinto(laberintoGeneral);
+        mod3.laberintoGeneral = ClonLaberinto(laberintoGeneral);
+        mod4.laberintoGeneral = ClonLaberinto(laberintoGeneral);
+
+        mod1.laberintoDeReservaModificador = ClonLaberinto(laberintoGeneral);
+        mod2.laberintoDeReservaModificador = ClonLaberinto(laberintoGeneral);
+        mod3.laberintoDeReservaModificador = ClonLaberinto(laberintoGeneral);
+        mod4.laberintoDeReservaModificador = ClonLaberinto(laberintoGeneral);
+
+        laberintoReserva = ClonLaberinto(laberintoGeneral);
+    }
+
+
+
+    IEnumerator PausaDeEdicion()
+    {
+        Debug.Log("Antes de la pausa");
+
+        // Espera 2 segundos sin congelar el juego
+        yield return new WaitForSeconds(4f);
+
+        Debug.Log("Después de la pausa");
+    }
+
+
+
+    void EstablecerAlturas()
+    {
+        mod1.height = height;
+        mod1.width = width;
+        mod2.height = height;
+        mod2.width = width;
+        mod3.height = height;
+        mod3.width = width;
+        mod4.height = height;
+        mod4.width = width;
+    }
+
+    void EstablecerStartGoal()
+    {
+        mod1.start.x = start.x;
+        mod1.start.y = start.y;
+        mod1.goal.x = goal.x;
+        mod1.goal.y = goal.y;
+
+        mod2.start.x = start.x;
+        mod2.start.y = start.y;
+        mod2.goal.x = goal.x;
+        mod2.goal.y = goal.y;
+
+        mod3.start.x = start.x;
+        mod3.start.y = start.y;
+        mod3.goal.x = goal.x;
+        mod3.goal.y = goal.y;
+
+        mod4.start.x = start.x;
+        mod4.start.y = start.y;
+        mod4.goal.x = goal.x;
+        mod4.goal.y = goal.y;
+    }
+
+    void EstablecerOffset()
+    {
+        mod2.offset.x = mod1.offset.x + width + 5;
+        mod3.offset.x = mod2.offset.x + width + 5;
+        mod4.offset.x = mod3.offset.x + width + 5;
+
+        mod2.offset.z = mod1.offset.z;
+        mod3.offset.z = mod2.offset.z;
+        mod4.offset.z = mod3.offset.z;
+
+        offset.x = mod1.offset.x;
+        offset.z = mod3.offset.z + height + 5;
+    }
+
+    public void BorrarCubos()
+    {
+        foreach (var cubo in cubosInstanciados)
+        {
+            if (cubo != null)
+                DestroyImmediate(cubo);
+        }
+        cubosInstanciados.Clear();
+    }
+
+    void ResetManual()
+    {
+
+        mod1.ReiniciarModificador();
+        mod2.ReiniciarModificador();
+        mod3.ReiniciarModificador();
+        mod4.ReiniciarModificador();
+        ReiniciarArreglos();
+
+        puntajeMinimo = 0;
+        cortafuego = 0;
+        GenerarGrillaYCrearLaberinto();
+
+        EstablecerAlturas();
+        EstablecerStartGoal();
+        EstablecerOffset();
+
+        if (laberintoGeneral != null)
+        {
+            ClonarTodoAlLaberintoGeneral();
+        }
+    }
+
+    public void ReiniciarArreglos()
+    {
+        laberintoGeneral = new int[width, height];
+        laberintoReserva = new int[width, height];
+
+        laberintoGeneral = null;
+        laberintoReserva = null;
     }
 
 }

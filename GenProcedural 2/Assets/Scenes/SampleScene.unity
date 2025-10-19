@@ -432,10 +432,10 @@ MonoBehaviour:
   mod2: {fileID: 1187824041}
   mod3: {fileID: 1094548969}
   mod4: {fileID: 1216632126}
-  width: 10
-  height: 10
+  width: 20
+  height: 20
   start: {x: 1, y: 1}
-  goal: {x: 8, y: 8}
+  goal: {x: 18, y: 16}
   terrainPrefabs:
   - {fileID: 6600729468802455904, guid: 7127d472f61169242866e1ac60f13b1d, type: 3}
   - {fileID: 5580230598994506885, guid: d9ca66760efec624fabb37b682362637, type: 3}
@@ -477,7 +477,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &707017230
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -485,20 +485,20 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 707017229}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d2d968776805aa64bb84e0369fc0665d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RandomInitState
-  width: 10
-  height: 10
+  width: 20
+  height: 20
   start: {x: 1, y: 1}
   goal: {x: 8, y: 8}
   terrainPrefabs:
   - {fileID: 6600729468802455904, guid: 7127d472f61169242866e1ac60f13b1d, type: 3}
   - {fileID: 5580230598994506885, guid: d9ca66760efec624fabb37b682362637, type: 3}
   - {fileID: 5644096139231708439, guid: 170aed3317b3f8846bd3534a5383051a, type: 3}
-  offset: {x: 15, y: 0, z: 0}
+  offset: {x: 30, y: 0, z: 0}
   probabilidadMuro: 0.4
 --- !u!4 &707017231
 Transform:
@@ -748,7 +748,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1392890316
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -756,13 +756,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1392890315}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5f3196682c8c87142bcdf3e4ed16bf99, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Genetico
-  width: 10
-  height: 29
+  width: 20
+  height: 20
   padres: 10
   hijos: 20
   generations: 10
@@ -828,7 +828,7 @@ MonoBehaviour:
   offset: {x: 30, y: 0, z: 0}
   probabilidadMuro: 0.4
   puntuacionDeEvaluacion: 0
-  laberintoAnalizado: 0
+  laberintoAnalizado: 1
 --- !u!4 &2111519776
 Transform:
   m_ObjectHideFlags: 0

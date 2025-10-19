@@ -22,17 +22,8 @@ public class Modificador : MonoBehaviour
     private List<GameObject> cubosInstanciados = new List<GameObject>();
 
     public int[,] laberintoGeneral;
+    public int[,] laberintoDeReservaModificador;
 
-
-    /// Mod Ignacio - Evaluador
-    /// 
-    /// Tengo la teoria de que crear algo que evalue la cantidad de bloques totales recorribles y la cantidad de bloques para la meta 
-    /// seria una buena función de evaluación. Por lo que aplicare ello:
-
-    private float bloquesParaLaMeta;
-    private float bloquesRecorriblesTotales;
-    private float bloquesTotales;
-    private float bloquesNoAccesibles;
     public float puntuacionDeEvaluacion;
 
     private float cortafuego;
@@ -66,37 +57,30 @@ public class Modificador : MonoBehaviour
         do
         {
             GenerarYLlenarLaberinto();
-            yield return new WaitForSeconds(3f);
+            yield return new WaitForSeconds(0.2f);
         } while (true);
     }
 
-    void GenerarYLlenarLaberinto()
+    private void GenerarYLlenarLaberinto()
     {
-        // Elimina los cubos anteriores
-        foreach (var cubo in cubosInstanciados)
-        {
-            if (cubo != null)
-                DestroyImmediate(cubo);
-        }
-        cubosInstanciados.Clear();
+        BorrarCubos();
 
         int[,] laberinto;
         List<Vector2Int> camino;
 
         if(laberintoGeneral == null)
         {
+            laberintoGeneral = ClonLaberinto(laberintoDeReservaModificador);
+
             do
             {
+                RemplazoManualLaberinto(laberintoGeneral, laberintoDeReservaModificador);
 
-                bloquesParaLaMeta = 0;
-                bloquesRecorriblesTotales = 0;
-                bloquesTotales = 0;
-
-                laberinto = AnalisarYEvaluar(laberintoGeneral);
+                laberinto = CrearVecino(laberintoGeneral);
                 camino = EncontrarCamino(laberinto, start.x, start.y, goal.x, goal.y);
 
-
-                bloquesNoAccesibles = bloquesTotales - bloquesRecorriblesTotales;
+                
+        
 
                 cortafuego++;
                 if (camino != null)
@@ -107,46 +91,28 @@ public class Modificador : MonoBehaviour
 
             } while (camino == null && cortafuego <= 50);
         }
-
-
-
-        // Intenta hasta que haya un camino
-        do
+        else
         {
-
-            bloquesParaLaMeta = 0;
-            bloquesRecorriblesTotales = 0;
-            bloquesTotales = 0;
-
-            laberinto = AnalisarYEvaluar(laberintoGeneral);
-            camino = EncontrarCamino(laberinto, start.x, start.y, goal.x, goal.y);
-
-
-            bloquesNoAccesibles = bloquesTotales - bloquesRecorriblesTotales;
-
-
-            /// Ya para explicarlo de manera simple dejare un escrito innecesario en el codigo por que se me da la gana (Ignacio)
-            /// La evaluación del lab funcionara de la siguiente manera:
-            /// Puntuare cada laberinto en base a una función de puntuación, y la que tenga mejor puntuación de los laberintos sera quien me lo quedare
-            /// - Cada cubo de camino +2 puntos
-            /// - Cada cubo no accesible = -3 puntos
-            /// Nota: pensaria en hacer algo con el width y height pero estoy cansado en este instante XD
-
-            
-
-            /*Debug.Log("Bloques para la meta: " + bloquesParaLaMeta);
-            Debug.Log("Bloques recorribles: " + bloquesRecorriblesTotales);
-            Debug.Log("Bloques totales: " + bloquesTotales);
-            Debug.Log("Bloques no accesibles: " + bloquesNoAccesibles);*/
-            
-
-            cortafuego++;
-            if (camino != null)
+            // Intenta hasta que haya un camino
+            do
             {
-                cortafuego = 0;
-            }
+                RemplazoManualLaberinto(laberintoGeneral, laberintoDeReservaModificador);
 
-        } while (camino == null && cortafuego <= 20);
+                laberinto = CrearVecino(laberintoGeneral);
+                camino = EncontrarCamino(laberinto, start.x, start.y, goal.x, goal.y);
+
+                cortafuego++;
+                if (camino != null)
+                {
+                    cortafuego = 0;
+                }
+
+            } while (camino == null && cortafuego <= 100);
+        }
+
+
+
+           
 
 
 
@@ -171,50 +137,56 @@ public class Modificador : MonoBehaviour
                     GameObject cubo = Instantiate(terrainPrefabs[tipo], pos, Quaternion.identity);
                     cubosInstanciados.Add(cubo);
                 }
+
+            RemplazoManualLaberinto(laberintoDeReservaModificador, laberintoGeneral);
         }
         else
         {
             Debug.Log("camino nulo");
         }
 
-
-
-
-        puntuacionDeEvaluacion = (bloquesParaLaMeta * 2) - (bloquesNoAccesibles * 3);
-        Debug.Log("Puntuación total: " + puntuacionDeEvaluacion);
+        puntuacionDeEvaluacion = EvaluarLaberinto(laberinto);
+        Debug.Log("Puntuación total: " + puntuacionDeEvaluacion.ToString("F10"));
         laberintoAnalizado = true;
     }
 
+    ///------------------------------------------------------------------------------------------------------------------------
 
-    int[,] AnalisarYEvaluar(int[,] laberinto)
+
+    void RemplazoManualLaberinto(int[,] laberintoARemplazar, int[,] laberintoBase)
     {
-      
+
+        if (laberintoARemplazar == null)
+        {
+            Debug.Log("fallo laberintoRemplazar");
+        }
+        else if (laberintoBase == null)
+        {
+            Debug.Log("fallo laberintoBase");
+        }
+        else
+        {
+            for (int x = 0; x < width; x++)
+                for (int y = 0; y < height; y++)
+                {
+                    laberintoARemplazar[x, y] = laberintoBase[x, y];
+                }
+        }
+    }
+
+
+    int[,] CrearVecino(int[,] laberinto)
+    {
+        int randomWidth = Random.Range(1,width-1);
+        int randomHeight = Random.Range(1, height - 1);
+
+  
         for (int x = 1; x < width - 1; x++)
             for (int y = 1; y < height - 1; y++)
             {
-
-                if (laberinto[x, y] == 1)
+                if (laberinto[x, y] == 1)//limpia camino
                 {
                     laberinto[x, y] = 0;
-                }
-
-
-                if (laberinto[x, y] == 0)
-                {
-                    laberinto[x, y] = 0;
-                    laberinto[x, y] = Random.value < probabilidadMuro/4 ? 2 : 0;
-                }
-                else if(laberinto[x, y] == 2)
-                {
-                    laberinto[x, y] = 0;
-                    laberinto[x, y] = Random.value < probabilidadMuro*2 ? 2 : 0;
-                }
-                    
-
-                //cuenta los bloques sin contar los muros
-                if (laberinto[x, y] == 0)
-                {
-                    bloquesTotales++;
                 }
             }
 
@@ -222,16 +194,21 @@ public class Modificador : MonoBehaviour
         if(laberinto[start.x, start.y] != 0)
         {
             laberinto[start.x, start.y] = 0;
-            bloquesTotales += 1;
         }
-
         if(laberinto[goal.x, goal.y] != 0)
         {
             laberinto[goal.x, goal.y] = 0;
-            bloquesTotales += 1;
         }
 
-        return laberinto;
+        //cambio del bloque random
+        if (laberinto[randomWidth, randomHeight] == 0)
+            laberinto[randomWidth, randomHeight] = 2;
+        else
+        {
+            laberinto[randomWidth, randomHeight] = 0;
+        }
+
+            return laberinto;
     }
 
     // BFS para encontrar el camino más corto
@@ -257,8 +234,6 @@ public class Modificador : MonoBehaviour
         {
             var actual = cola.Dequeue();
 
-            bloquesRecorriblesTotales++;
-
             if (actual.x == endX && actual.y == endY)
             {
                 // Reconstruye el camino
@@ -268,8 +243,6 @@ public class Modificador : MonoBehaviour
                 {
                     camino.Add(paso);
                     paso = previo[paso.x, paso.y];
-
-                    bloquesParaLaMeta++;
                 }
                 camino.Reverse();
                 caminoEncontrado = camino;
@@ -295,6 +268,160 @@ public class Modificador : MonoBehaviour
             return caminoEncontrado;
         }
         return null; // No hay camino
+    }
+
+
+    int[,] ClonLaberinto(int[,] original)
+    {
+        int width = original.GetLength(0);
+        int height = original.GetLength(1);
+        int[,] copia = new int[width, height];
+
+        for (int x = 0; x < width; x++)
+            for (int y = 0; y < height; y++)
+                copia[x, y] = original[x, y];
+
+        return copia;
+    }
+
+    float EvaluarLaberinto(int[,] laberinto)
+    {
+        int bloquesRecorribles = ContarBloquesRecorribles(laberinto, start.x, start.y);
+        int largoCamino = EvaluarLargoCamimno(laberinto, start.x, start.y, goal.x, goal.y);
+        
+        Vector2Int bloquesLaberinto = BloquesSinMuroYMuroLaberinto(laberinto);
+        int noMurosLab = bloquesLaberinto.x;
+        int MurosLab = bloquesLaberinto.y;
+        int totalBloques = MurosLab + noMurosLab;
+
+        int bloquesNoAccesibles = noMurosLab - bloquesRecorribles;
+
+        // --- Equilibrio 70/30 ---
+        float porcentajeNoMuros = (float)noMurosLab / totalBloques;
+        float diferenciaNoMuros = Mathf.Abs(0.5f - porcentajeNoMuros);
+        float equilibrio = 1f - diferenciaNoMuros; // más simple, más directo
+
+        // --- Métricas ---
+        float proporcionRecorrible = (noMurosLab > 0) ? (float)bloquesRecorribles / noMurosLab : 0f;
+        float proporcionCamino = (totalBloques > 0) ? (float)largoCamino / totalBloques : 0f;
+        float proporcionNoAccesibles = (noMurosLab > 0) ? (float)bloquesNoAccesibles / noMurosLab : 0f;
+
+        // --- Ponderaciones ---
+        float puntuacion =
+            (equilibrio * 0.5f) +            // 70/30 balance
+            (proporcionRecorrible * 0.2f) +  // accesibilidad general
+            (proporcionCamino * 0.15f) -     // camino largo = bueno
+            (proporcionNoAccesibles * 0.15f); // castigo suave
+
+
+
+        Debug.Log("equilibrio" + equilibrio);
+        Debug.Log("proporcionRecorrible" + proporcionRecorrible);
+        Debug.Log("proporcionCamino" + proporcionCamino);
+        Debug.Log("proporcionNoAccesibles" + proporcionNoAccesibles);
+
+        return puntuacion;
+    }
+
+    int EvaluarLargoCamimno(int[,] laberinto, int startX, int startY, int endX, int endY)//contador de camino
+    {
+        var camino = EncontrarCamino(laberinto, startX, startY, endX, endY);
+
+        if (camino == null)
+            return 0;
+
+        return camino.Count;
+    }
+
+    Vector2Int BloquesSinMuroYMuroLaberinto(int[,] laberinto)
+    {
+
+        int BloquesNoMuro = 0;
+        int BloquesMuro = 0;
+
+        for (int x = 1; x < width - 1; x++)
+            for (int y = 1; y < height - 1; y++)
+            {
+                if (laberinto[x, y] == 0 || laberinto[x, y] == 1)
+                {
+                    BloquesNoMuro++;
+                }
+                else if (laberinto[x, y] == 2)
+                {
+                    BloquesMuro++;
+                }
+            }
+
+        return new Vector2Int(BloquesNoMuro, BloquesMuro);
+    }
+
+
+    int ContarBloquesRecorribles(int[,] laberinto, int startX, int startY)//busqueda amplpia simple para contar camino
+    {
+        int w = laberinto.GetLength(0);
+        int h = laberinto.GetLength(1);
+
+        bool[,] visitado = new bool[w, h];
+        Queue<Vector2Int> cola = new Queue<Vector2Int>();
+
+        cola.Enqueue(new Vector2Int(startX, startY));
+        visitado[startX, startY] = true;
+
+        int recorribles = 0;
+
+        int[] dx = { 1, -1, 0, 0 };
+        int[] dy = { 0, 0, 1, -1 };
+
+        while (cola.Count > 0)
+        {
+            var actual = cola.Dequeue();
+            recorribles++;
+
+            for (int dir = 0; dir < 4; dir++)
+            {
+                int nx = actual.x + dx[dir];
+                int ny = actual.y + dy[dir];
+
+                if (nx >= 0 && nx < w && ny >= 0 && ny < h)
+                {
+                    if (!visitado[nx, ny] && laberinto[nx, ny] != 2)
+                    {
+                        visitado[nx, ny] = true;
+                        cola.Enqueue(new Vector2Int(nx, ny));
+                    }
+                }
+            }
+        }
+        return recorribles;
+    }
+
+
+    public void BorrarCubos()
+    {
+        foreach (var cubo in cubosInstanciados)
+        {
+            if (cubo != null)
+                DestroyImmediate(cubo);
+        }
+        cubosInstanciados.Clear();
+    }
+
+
+    public void ReiniciarModificador()
+    {
+        StopAllCoroutines(); 
+        BorrarCubos();
+        ReiniciarArreglos();
+        laberintoAnalizado = false;
+        cortafuego = 0;
+        puntuacionDeEvaluacion = 0f;
+        StartCoroutine(Start());
+    }
+
+    public void ReiniciarArreglos()
+    {
+        laberintoGeneral = new int[width, height];
+        laberintoDeReservaModificador = new int[width, height];
     }
 
 
