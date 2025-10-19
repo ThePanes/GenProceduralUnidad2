@@ -19,6 +19,9 @@ public class RandomInitState : MonoBehaviour
     public Vector3 offset = new Vector3(15, 0, 0); // Desplazamiento para no encimar el otro laberinto
     [Range(0, 1)] public float probabilidadMuro = 0.4f; // Menos muros = laberinto más abierto
 
+    [Tooltip("Índice en terrainPrefabs usado para representar inicio y meta")]
+    public int startGoalPrefabIndex = 3;
+
     private List<GameObject> cubosInstanciados = new List<GameObject>();
 
 
@@ -43,6 +46,12 @@ public class RandomInitState : MonoBehaviour
         start.y = Mathf.Clamp(start.y, 1, height - 2);
         goal.x = Mathf.Clamp(goal.x, 1, width - 2);
         goal.y = Mathf.Clamp(goal.y, 1, height - 2);
+
+        // Valida startGoalPrefabIndex respecto al array si está asignado
+        if (terrainPrefabs != null && terrainPrefabs.Length > 0)
+            startGoalPrefabIndex = Mathf.Clamp(startGoalPrefabIndex, 0, terrainPrefabs.Length - 1);
+        else
+            startGoalPrefabIndex = Math.Max(0, startGoalPrefabIndex);
     }
 
     void Start()
@@ -102,23 +111,57 @@ public class RandomInitState : MonoBehaviour
         } while (camino == null && cortafuego <= 20);
 
         // Marca el camino correcto con tierra (1)
-        foreach (var pos in camino)
+        if (camino != null)
         {
-            if (laberinto[pos.x, pos.y] == 0)
-                laberinto[pos.x, pos.y] = 1;
+            foreach (var pos in camino)
+            {
+                if (laberinto[pos.x, pos.y] == 0)
+                    laberinto[pos.x, pos.y] = 1;
+            }
         }
         // Asegura inicio y fin como pasto
         laberinto[start.x, start.y] = 0;
         laberinto[goal.x, goal.y] = 0;
 
-        // Dibuja el laberinto
+        // Dibuja el laberinto usando prefab especial para start/goal (índice startGoalPrefabIndex)
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
             {
                 int tipo = laberinto[x, y];
-                Vector3 pos = new Vector3(x, 0, y) + offset;
-                GameObject cubo = Instantiate(terrainPrefabs[tipo], pos, Quaternion.identity);
-                cubosInstanciados.Add(cubo);
+                // si la celda es start o goal, intentamos usar el prefab especial
+                if ((x == start.x && y == start.y) || (x == goal.x && y == goal.y))
+                {
+                    int idx = startGoalPrefabIndex;
+                    if (terrainPrefabs == null || terrainPrefabs.Length == 0)
+                    {
+                        Debug.LogWarning("RandomInitState: terrainPrefabs no asignado o vacío.");
+                        idx = Mathf.Clamp(tipo, 0, Mathf.Max(0, (terrainPrefabs != null ? terrainPrefabs.Length - 1 : 0)));
+                    }
+                    else
+                    {
+                        idx = Mathf.Clamp(startGoalPrefabIndex, 0, terrainPrefabs.Length - 1);
+                        // si el prefab en idx es null, fallback a tipo original
+                        if (terrainPrefabs[idx] == null)
+                            idx = Mathf.Clamp(tipo, 0, terrainPrefabs.Length - 1);
+                    }
+
+                    Vector3 pos = new Vector3(x, 0, y) + offset;
+                    GameObject cubo = Instantiate(terrainPrefabs[idx], pos, Quaternion.identity);
+                    cubosInstanciados.Add(cubo);
+                }
+                else
+                {
+                    int idx = tipo;
+                    if (terrainPrefabs == null || terrainPrefabs.Length == 0)
+                    {
+                        Debug.LogWarning("RandomInitState: terrainPrefabs no asignado o vacío.");
+                        continue;
+                    }
+                    idx = Mathf.Clamp(tipo, 0, terrainPrefabs.Length - 1);
+                    Vector3 pos = new Vector3(x, 0, y) + offset;
+                    GameObject cubo = Instantiate(terrainPrefabs[idx], pos, Quaternion.identity);
+                    cubosInstanciados.Add(cubo);
+                }
             }
     }
 
